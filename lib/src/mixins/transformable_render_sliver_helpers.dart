@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 mixin TransformableRenderSliverHelpers on RenderSliverHelpers {
   Matrix4 getCurrentTransform(RenderBox child);
+  double getCurrentOpacity(RenderBox child);
 
   @override
   bool hitTestBoxChild(
@@ -10,6 +12,9 @@ mixin TransformableRenderSliverHelpers on RenderSliverHelpers {
     required double mainAxisPosition,
     required double crossAxisPosition,
   }) {
+    /*final newChild = RenderOpacity(child: child, opacity: 0.5).child;
+    if (newChild != null) child = newChild;*/
+
     //// Copied from [RenderSliverHelpers.hitTestBoxChild] except the OVERRIDE
     final bool rightWayUp = _getRightWayUp(constraints);
     double delta = childMainAxisPosition(child);
@@ -25,8 +30,7 @@ mixin TransformableRenderSliverHelpers on RenderSliverHelpers {
           delta = geometry!.paintExtent - child.size.width - delta;
         }
         paintOffset = Offset(delta, crossAxisDelta);
-        transformedPosition =
-            Offset(absolutePosition, absoluteCrossAxisPosition);
+        transformedPosition = Offset(absolutePosition, absoluteCrossAxisPosition);
         break;
       case Axis.vertical:
         if (!rightWayUp) {
@@ -34,8 +38,7 @@ mixin TransformableRenderSliverHelpers on RenderSliverHelpers {
           delta = geometry!.paintExtent - child.size.height - delta;
         }
         paintOffset = Offset(crossAxisDelta, delta);
-        transformedPosition =
-            Offset(absoluteCrossAxisPosition, absolutePosition);
+        transformedPosition = Offset(absoluteCrossAxisPosition, absolutePosition);
         break;
     }
     //// ---------------↓↓↓OVERRIDE↓↓↓---------------

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:transformable_list_view/src/transform_matrix_callback.dart';
+import 'package:transformable_list_view/src/transform_wrapper_callback.dart';
 import 'package:transformable_list_view/src/transformable_list_item.dart';
 import 'package:transformable_list_view/src/mixins/transformable_render_sliver_helpers.dart';
 
@@ -14,32 +15,35 @@ class TransformableSliver extends SingleChildRenderObjectWidget {
   ///
   /// Doesn't receive item [index] since doesn't use [SliverList]. If you need index you can use [TransformableListView] or [TransformableSliverList]
   final TransformMatrixCallback getTransformMatrix;
+  final TransformOpacityCallback getTransformOpacity;
 
   /// {@macro transformable_sliver}
   const TransformableSliver({
     required this.getTransformMatrix,
+    required this.getTransformOpacity,
     required super.child,
     super.key,
   });
 
   @override
   TransformableRenderSliver createRenderObject(BuildContext context) {
-    return TransformableRenderSliver(getTransformMatrix: getTransformMatrix);
+    return TransformableRenderSliver(getTransformMatrix: getTransformMatrix, getTransformOpacity: getTransformOpacity);
   }
 }
 
 /// {@template transformable_render_sliver}
 /// Extends [SliverToBoxAdapter] with [RenderSliverToBoxAdapter] callback that allows to add transform animations.
 /// {@endtemplate}
-class TransformableRenderSliver extends RenderSliverToBoxAdapter
-    with TransformableRenderSliverHelpers {
+class TransformableRenderSliver extends RenderSliverToBoxAdapter with TransformableRenderSliverHelpers {
   final TransformMatrixCallback getTransformMatrix;
+  final TransformOpacityCallback getTransformOpacity;
   final transformLayer = LayerHandle<TransformLayer>();
 
   Matrix4 paintTransform = Matrix4.identity();
+  double paintOpacity = 1.0;
 
   /// {@macro transformable_render_sliver}
-  TransformableRenderSliver({required this.getTransformMatrix});
+  TransformableRenderSliver({required this.getTransformMatrix, required this.getTransformOpacity});
 
   @override
   void paint(PaintingContext context, Offset offset) {
@@ -52,16 +56,22 @@ class TransformableRenderSliver extends RenderSliverToBoxAdapter
     final Offset itemOffset;
     switch (constraints.axis) {
       case Axis.horizontal:
-        itemOffset =
-            offset.translate(offset.dx == 0 ? -constraints.scrollOffset : 0, 0);
+        itemOffset = offset.translate(offset.dx == 0 ? -constraints.scrollOffset : 0, 0);
         break;
       case Axis.vertical:
-        itemOffset =
-            offset.translate(0, offset.dy == 0 ? -constraints.scrollOffset : 0);
+        itemOffset = offset.translate(0, offset.dy == 0 ? -constraints.scrollOffset : 0);
         break;
     }
 
     paintTransform = getTransformMatrix(
+      TransformableListItem(
+        offset: itemOffset,
+        size: size,
+        constraints: constraints,
+      ),
+    );
+
+    paintOpacity = getTransformOpacity(
       TransformableListItem(
         offset: itemOffset,
         size: size,
@@ -82,4 +92,7 @@ class TransformableRenderSliver extends RenderSliverToBoxAdapter
 
   @override
   Matrix4 getCurrentTransform(RenderBox child) => paintTransform;
+
+  @override
+  double getCurrentOpacity(RenderBox child) => paintOpacity;
 }

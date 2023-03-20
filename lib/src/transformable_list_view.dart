@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:transformable_list_view/src/transform_wrapper_callback.dart';
 
 import 'package:transformable_list_view/transformable_list_view.dart';
 
@@ -9,10 +10,12 @@ class TransformableListView extends ListView {
   /// Receives [TransformableListItem] that contains data about item(offset, size, index, viewport constraints)
   /// and returns [Matrix4] that represents item transformations on the current offset. If it returns [Matrix4.identity()] no transformation will be applied
   final TransformMatrixCallback getTransformMatrix;
+  final TransformOpacityCallback getTransformOpacity;
 
   /// {@macro transformable_list_view}
   TransformableListView({
     required this.getTransformMatrix,
+    required this.getTransformOpacity,
     super.key,
     super.scrollDirection,
     super.reverse,
@@ -38,6 +41,7 @@ class TransformableListView extends ListView {
   TransformableListView.builder({
     required super.itemBuilder,
     required this.getTransformMatrix,
+    required this.getTransformOpacity,
     super.key,
     super.scrollDirection,
     super.reverse,
@@ -63,6 +67,7 @@ class TransformableListView extends ListView {
   /// {@macro transformable_list_view}
   TransformableListView.separated({
     required this.getTransformMatrix,
+    required this.getTransformOpacity,
     required super.itemBuilder,
     required super.separatorBuilder,
     required super.itemCount,
@@ -88,6 +93,7 @@ class TransformableListView extends ListView {
   /// {@macro transformable_list_view}
   const TransformableListView.custom({
     required this.getTransformMatrix,
+    required this.getTransformOpacity,
     required super.childrenDelegate,
     super.key,
     super.scrollDirection,
@@ -118,11 +124,13 @@ class TransformableListView extends ListView {
         itemExtent: itemExtent,
         delegate: childrenDelegate,
         getTransformMatrix: getTransformMatrix,
+        getTransformOpacity: getTransformOpacity,
       );
     }
 
     return TransformableSliverList(
       delegate: childrenDelegate,
+      getTransformOpacity: getTransformOpacity,
       getTransformMatrix: getTransformMatrix,
     );
   }
